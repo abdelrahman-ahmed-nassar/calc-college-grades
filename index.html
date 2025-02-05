@@ -194,12 +194,13 @@
       let optionEl = ``;
       let subjectsEl = ``;
       let tempOptionEl = ``;
+      let gradesFormEl = document.querySelector("#gradesForm");
 
       function updateUI() {
         optionEl = ``;
         subjectsEl = ``;
         tempOptionEl = ``;
-        gradesFormEl.innerHTML = subjectsEl;
+        gradesFormEl.innerHTML = ``;
         for (let i = 0; i < classifications.length; i++) {
           tempOptionEl = `
           <option value="${classifications[i].code}">${classifications[i].name}</option>
@@ -227,7 +228,6 @@
             </div>
             `;
 
-        let gradesFormEl = document.querySelector("#gradesForm");
         gradesFormEl.innerHTML = subjectsEl;
       }
       updateUI();
