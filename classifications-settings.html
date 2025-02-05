@@ -296,6 +296,7 @@
           );
           renderClassifications();
           errorMessage.textContent = "";
+          location.reload();
         };
 
         // Save/Update classification
@@ -340,10 +341,13 @@
           classificationForm.reset();
           editIndexInput.value = -1;
           errorMessage.textContent = "";
+
+          location.reload();
         });
 
         // Initial render
         renderClassifications();
+
       });
     </script>
   </body>

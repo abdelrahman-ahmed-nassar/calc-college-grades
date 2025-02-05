@@ -189,13 +189,6 @@
       }
       loadData();
 
-      document.addEventListener("DOMContentLoaded", function () {
-        loadData();
-      });
-      window.addEventListener("popstate", function (event) {
-        loadData();
-      });
-
       /////////////////////////////////////////////
       // !HTML
       let optionEl = ``;
@@ -312,6 +305,7 @@
       }
 
       submitBtn.addEventListener("click", calculate);
+
     </script>
   </body>
 </html>
