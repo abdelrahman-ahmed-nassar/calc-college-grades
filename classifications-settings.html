@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>تعديل التقديرات</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+      }
+      .edit-form {
+        margin-top: 20px;
+      }
+      .form-group {
+        margin-bottom: 10px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      input,
+      select {
+        margin: 5px 0;
+        padding: 5px;
+        width: 100%;
+      }
+      button {
+        padding: 5px 10px;
+      }
+      .error {
+        color: red;
+        margin-bottom: 10px;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #f4f4f4;
+      }
+      h1,
+      h2 {
+        text-align: center;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: center;
+      }
+      th {
+        background: #007bff;
+        color: white;
+      }
+      .actions button {
+        padding: 8px 12px;
+        border: none;
+        cursor: pointer;
+        color: white;
+        border-radius: 4px;
+      }
+      .actions .edit {
+        background: #28a745;
+      }
+      .actions .delete {
+        background: #dc3545;
+      }
+      .edit-form {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        font-weight: bold;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .error {
+        color: red;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .delete-btn {
+        background-color: #f03e3e;
+      }
+      .delete-btn:hover {
+        background-color: #c92a2a;
+      }
+      .edit-btn {
+        background-color: #1971c2;
+      }
+      .edit-btn:hover {
+        background-color: #1864ab;
+      }
+      @media (max-width: 600px) {
+        th,
+        td {
+          font-size: 14px;
+          padding: 8px;
+        }
+        .actions button {
+          padding: 6px 8px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>تعديل التقديرات</h1>
+
+    <div id="classificationsList"></div>
+
+    <div class="edit-form">
+      <h2>التعديل</h2>
+      <div id="errorMessage" class="error"></div>
+      <form id="classificationForm">
+        <input type="hidden" id="editIndex" value="-1" />
+        <div class="form-group">
+          <label for="classificationName">اسم التقدير</label>
+          <input
+            type="text"
+            id="classificationName"
+            placeholder="Enter classification name"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="classificationCode">كود التقدير (مميز)</label>
+          <input
+            type="text"
+            id="classificationCode"
+            placeholder="Enter unique code"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="classificationMax">أعلي نسبة</label>
+          <input
+            type="number"
+            id="classificationMax"
+            step="0.01"
+            placeholder="Enter maximum score"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="classificationMin">أقل نسبة</label>
+          <input
+            type="number"
+            id="classificationMin"
+            step="0.01"
+            placeholder="Enter minimum score"
+            required
+          />
+        </div>
+        <input type="hidden" id="classificationAverage" />
+        <button type="submit">حفظ التعديلات</button>
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const classificationsList = document.getElementById(
+          "classificationsList"
+        );
+        const classificationForm =
+          document.getElementById("classificationForm");
+        const nameInput = document.getElementById("classificationName");
+        const codeInput = document.getElementById("classificationCode");
+        const maxInput = document.getElementById("classificationMax");
+        const minInput = document.getElementById("classificationMin");
+        const averageInput = document.getElementById("classificationAverage");
+        const editIndexInput = document.getElementById("editIndex");
+        const errorMessage = document.getElementById("errorMessage");
+
+        // Dynamically calculate average
+        function calculateAverage(min, max) {
+          return parseFloat(((min + max) / 2).toFixed(3));
+        }
+
+        // Fetch classifications from localStorage
+        let classifications =
+          JSON.parse(localStorage.getItem("classifications")) || [];
+
+        // Render classifications table
+        function renderClassifications() {
+          classificationsList.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>التقدير</th>
+                                <th>الكود</th>
+                                <th>أقل نسبة</th>
+                                <th>أعلي نسبة</th>
+                                <th>التعديلات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${classifications
+                              .map(
+                                (cls, index) => `
+                                <tr>
+                                    <td>${cls.name}</td>
+                                    <td>${cls.code}</td>
+                                    <td>${cls.min}</td>
+                                    <td>${cls.max}</td>
+                                    <td class="actions">
+                                        <button class='edit-btn' onclick="editClassification(${index})">تعديل</button>
+                                        <button class='delete-btn' onclick="deleteClassification(${index})">حذف</button>
+                                    </td>
+                                </tr>
+                            `
+                              )
+                              .join("")}
+                        </tbody>
+                    </table>
+                `;
+        }
+
+        // Check if code is unique
+        function isCodeUnique(code, currentIndex) {
+          return classifications.every(
+            (cls, index) =>
+              index === currentIndex ||
+              cls.code.toLowerCase() !== code.toLowerCase()
+          );
+        }
+
+        // Edit classification
+        window.editClassification = (index) => {
+          const cls = classifications[index];
+          nameInput.value = cls.name;
+          codeInput.value = cls.code;
+          maxInput.value = cls.max;
+          minInput.value = cls.min;
+          editIndexInput.value = index;
+          errorMessage.textContent = "";
+        };
+
+        // Delete classification
+        window.deleteClassification = (index) => {
+          classifications.splice(index, 1);
+          localStorage.setItem(
+            "classifications",
+            JSON.stringify(classifications)
+          );
+          renderClassifications();
+          errorMessage.textContent = "";
+        };
+
+        // Save/Update classification
+        classificationForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const index = parseInt(editIndexInput.value);
+          const code = codeInput.value.trim();
+
+          // Check for unique code
+          if (!isCodeUnique(code, index)) {
+            errorMessage.textContent = "Classification code must be unique!";
+            return;
+          }
+
+          const min = parseFloat(minInput.value);
+          const max = parseFloat(maxInput.value);
+          const average = calculateAverage(min, max);
+
+          const newClassification = {
+            name: nameInput.value.trim(),
+            code: code,
+            max: max,
+            min: min,
+            average: average,
+          };
+
+          if (index === -1) {
+            // Add new classification
+            classifications.push(newClassification);
+          } else {
+            // Update existing classification
+            classifications[index] = newClassification;
+          }
+
+          localStorage.setItem(
+            "classifications",
+            JSON.stringify(classifications)
+          );
+          renderClassifications();
+
+          // Reset form
+          classificationForm.reset();
+          editIndexInput.value = -1;
+          errorMessage.textContent = "";
+        });
+
+        // Initial render
+        renderClassifications();
+      });
+    </script>
+  </body>
+</html>

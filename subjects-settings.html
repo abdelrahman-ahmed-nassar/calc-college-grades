@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Subjects Management</title>
+    <style>
+      body {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+      }
+      .edit-form {
+        margin-top: 20px;
+      }
+      input {
+        margin: 5px 0;
+        padding: 5px;
+        width: 100%;
+      }
+      button {
+        padding: 5px 10px;
+      }
+
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+          sans-serif;
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #f4f4f4;
+      }
+      h1,
+      h2 {
+        text-align: center;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: center;
+      }
+      th {
+        background: #007bff;
+        color: white;
+      }
+      .actions button {
+        padding: 8px 12px;
+        border: none;
+        cursor: pointer;
+        color: white;
+        border-radius: 4px;
+      }
+      .actions .edit {
+        background: #28a745;
+      }
+      .actions .delete {
+        background: #dc3545;
+      }
+      .edit-form {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        font-weight: bold;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .error {
+        color: red;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .delete-btn {
+        background-color: #f03e3e;
+      }
+      .delete-btn:hover {
+        background-color: #c92a2a;
+      }
+      .edit-btn {
+        background-color: #1971c2;
+      }
+      .edit-btn:hover {
+        background-color: #1864ab;
+      }
+      @media (max-width: 600px) {
+        th,
+        td {
+          font-size: 14px;
+          padding: 8px;
+        }
+        .actions button {
+          padding: 6px 8px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>تعديل المواد</h1>
+
+    <div id="subjectsList"></div>
+
+    <div class="edit-form">
+      <h2>تعديل المواد</h2>
+      <form id="subjectForm">
+        <input type="hidden" id="editIndex" value="-1" />
+        <input type="text" id="subjectName" placeholder="اسم المادة" required />
+        <input
+          type="number"
+          id="subjectCredits"
+          placeholder="الدرجة الكلية"
+          required
+        />
+        <button type="submit">حفظ التغييرات</button>
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const subjectsList = document.getElementById("subjectsList");
+        const subjectForm = document.getElementById("subjectForm");
+        const subjectNameInput = document.getElementById("subjectName");
+        const subjectCreditsInput = document.getElementById("subjectCredits");
+        const editIndexInput = document.getElementById("editIndex");
+
+        // Fetch subjects from localStorage
+        let subjects = JSON.parse(localStorage.getItem("subjectsArr")) || [];
+
+        // Render subjects table
+        function renderSubjects() {
+          subjectsList.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>المادة</th>
+                                <th>الدرجة الكلية</th>
+                                <th>التعديلات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${subjects
+                              .map(
+                                (subject, index) => `
+                                <tr>
+                                    <td>${subject[0]}</td>
+                                    <td>${subject[1]}</td>
+                                    <td class="actions">
+                                        <button class='edit-btn' onclick="editSubject(${index})">تعديل</button>
+                                        <button class='delete-btn' onclick="deleteSubject(${index})">حذف</button>
+                                    </td>
+                                </tr>
+                            `
+                              )
+                              .join("")}
+                        </tbody>
+                    </table>
+                `;
+        }
+
+        // Edit subject
+        window.editSubject = (index) => {
+          const subject = subjects[index];
+          subjectNameInput.value = subject[0];
+          subjectCreditsInput.value = subject[1];
+          editIndexInput.value = index;
+        };
+
+        // Delete subject
+        window.deleteSubject = (index) => {
+          subjects.splice(index, 1);
+          localStorage.setItem("subjectsArr", JSON.stringify(subjects));
+          renderSubjects();
+        };
+
+        // Save/Update subject
+        subjectForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const index = parseInt(editIndexInput.value);
+          const newSubject = [
+            subjectNameInput.value.trim(),
+            parseInt(subjectCreditsInput.value),
+          ];
+
+          if (index === -1) {
+            // Add new subject
+            subjects.push(newSubject);
+          } else {
+            // Update existing subject
+            subjects[index] = newSubject;
+          }
+
+          localStorage.setItem("subjectsArr", JSON.stringify(subjects));
+          renderSubjects();
+
+          // Reset form
+          subjectForm.reset();
+          editIndexInput.value = -1;
+        });
+
+        // Initial render
+        renderSubjects();
+      });
+    </script>
+  </body>
+</html>

@@ -4,13 +4,115 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>حساب التقدير العام</title>
-    <link rel="stylesheet" href="style.css" />
-    <script defer src="script.js"></script>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+          sans-serif, sans-serif;
+        background: linear-gradient(
+          to bottom right,
+          #22b8cf,
+          #15aabf,
+          #1098ad,
+          #0c8599,
+          #0b7285
+        );
+        font-size: 18px;
+        display: flex;
+        justify-content: center;
+        padding: 50px 10px;
+      }
+
+      .container {
+        background-color: #e3fafc;
+        padding: 10px 20px 10px 10px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        height: 100%;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 10px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+
+      .calc-grade,
+      .settings-link {
+        text-align: center;
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        margin-bottom: 20px;
+      }
+
+      .calc-grade:hover {
+        background-color: #0056b3;
+      }
+      .settings-group {
+        display: flex;
+        justify-content: space-between;
+      }
+      .settings-link {
+        flex-basis: 40%;
+        text-decoration: none;
+        width: auto;
+        background-color: #333;
+      }
+
+      #result {
+        margin-top: 20;
+        text-align: center;
+      }
+
+      /* media small screen */
+
+      @media (max-width: 600px) {
+        body {
+          padding: 20px;
+        }
+        .container {
+          padding: 20px;
+        }
+
+        .form-group {
+          text-align: center;
+          flex-direction: column;
+        }
+      }
+    </style>
   </head>
   <body>
     <div class="container">
       <h1>حساب التقدير العام</h1>
       <form id="gradesForm">
+        <button id="calc-grade">احسب التقدير</button>
       </form>
       <div id="result">
         <h2>النتائج</h2>
@@ -20,5 +122,185 @@
         <p id="minGrade"></p>
       </div>
     </div>
+
+    <script>
+      ////////////////////////////////////////////////////
+      // ! UTILS
+      const getLocalStorageItem = (key, defaultValue) => {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : defaultValue;
+        } catch (error) {
+          console.error(`Error parsing ${key} from localStorage:`, error);
+          return defaultValue;
+        }
+      };
+
+      ////////////////////////////////////////////////////
+      // ! DATA
+
+      const defaultSubjectsArr = [
+        ["رياضيات", 150],
+        ["إلكترونيات", 150],
+        ["دوائر كهربية", 100],
+        ["برمجة", 100],
+        ["أجهزة قياس", 100],
+        ["إنجليزي", 100],
+      ];
+
+      const defaultClassifications = [
+        { name: "امتياز", code: "A", max: 1, min: 0.85, average: 0.925 },
+        { name: "جيد جدا", code: "B", max: 0.85, min: 0.75, average: 0.8 },
+        { name: "جيد", code: "C", max: 0.75, min: 0.65, average: 0.7 },
+        { name: "مقبول", code: "D", max: 0.65, min: 0.5, average: 0.575 },
+        { name: "مقبول منخفض", code: "F", max: 0.5, min: 0.25, average: 0.375 },
+        {
+          name: "راسب",
+          code: "G",
+          max: 0.25,
+          min: 0.1,
+          average: 0.125,
+        },
+        { name: "صفر", code: "J", max: 0.1, min: -0.1, average: 0 },
+      ];
+
+      const subjectsArr = getLocalStorageItem(
+        "subjectsArr",
+        defaultSubjectsArr
+      );
+      const classifications = getLocalStorageItem(
+        "classifications",
+        defaultClassifications
+      );
+
+      // Optionally, ensure localStorage is populated
+      if (!localStorage.getItem("subjectsArr")) {
+        localStorage.setItem("subjectsArr", JSON.stringify(defaultSubjectsArr));
+      }
+
+      if (!localStorage.getItem("classifications")) {
+        localStorage.setItem(
+          "classifications",
+          JSON.stringify(defaultClassifications)
+        );
+      }
+
+      /////////////////////////////////////////////
+      // !HTML
+      let optionEl = ``;
+
+      for (let i = 0; i < classifications.length; i++) {
+        let tempOptionEl = `
+    <option value="${classifications[i].code}">${classifications[i].name}</option>
+  `;
+        optionEl += tempOptionEl;
+      }
+
+      let subjectsEl = ``;
+      for (let i = 0; i < subjectsArr.length; i++) {
+        let subjectName = subjectsArr[i][0];
+        let tempSubjectEl = `
+          <div class="form-group">
+          <label for="${subjectName}">${subjectName}</label>
+          <select id="${subjectName}" name="${subjectName}">
+            ${optionEl}
+          </select>
+        </div>`;
+        subjectsEl += tempSubjectEl;
+      }
+
+      subjectsEl += `<button type="submit" id="calc-grade" class="calc-grade">احسب التقدير</button>`;
+      subjectsEl += `
+          <div class="settings-group">
+      <a href="/subjects-settings.html" class='settings-link'>تعديل المواد</a>
+      <a href="/classifications-settings.html" class='settings-link'>تعديل التقديرات</a>
+    </div>
+      `;
+
+      let gradesFormEl = document.querySelector("#gradesForm");
+      gradesFormEl.innerHTML = subjectsEl;
+
+      const submitBtn = document.getElementById("calc-grade");
+
+      ////////////////////////////////////
+      // !LOGIC
+
+      let subjects = [];
+      let totalMarks = 0;
+
+      for (let subject of subjectsArr) {
+        // creating object according to degree
+        subjects.push({
+          name: subject[0],
+          degree: subject[1],
+          maxCurrent: 0,
+          minCurrent: 0,
+          averageCurrent: 0,
+        });
+        totalMarks += subject[1];
+      }
+
+      function getGrade(grade) {
+        for (let i = 0; i < classifications.length; i++) {
+          if (
+            grade >= classifications[i].min &&
+            grade <= classifications[i].max
+          ) {
+            return classifications[i].name;
+          }
+        }
+      }
+
+      function calcPercentage(degree) {
+        return ((degree / totalMarks) * 100).toFixed(2);
+      }
+
+      //*  calc the grade
+
+      function calculate(e) {
+        e.preventDefault();
+
+        let maxSum = 0;
+        let minSum = 0;
+        let averageSum = 0;
+        for (let i = 0; i < subjects.length; i++) {
+          const degreeClass = document.getElementById(
+            `${subjects[i].name}`
+          ).value;
+          const degreeClassObject = classifications.find(
+            (obj) => obj.code === degreeClass
+          );
+          // adjust the object
+          subjects[i].maxCurrent = subjects[i].degree * degreeClassObject.max;
+          subjects[i].minCurrent = subjects[i].degree * degreeClassObject.min;
+          subjects[i].averageCurrent =
+            subjects[i].degree * degreeClassObject.average;
+
+          // calc the sum
+          maxSum += subjects[i].maxCurrent;
+          minSum += subjects[i].minCurrent;
+          averageSum += subjects[i].averageCurrent;
+        }
+        // print output
+        document.getElementById(
+          "grade"
+        ).textContent = ` التقدير العام: ${getGrade(averageSum / totalMarks)}`;
+        document.getElementById(
+          "maxGrade"
+        ).textContent = ` أعلى نسبة ممكنه: %${calcPercentage(
+          maxSum.toFixed(2)
+        )}`;
+        document.getElementById(
+          "minGrade"
+        ).textContent = ` أقل نسبة ممكنه: %${calcPercentage(
+          minSum.toFixed(2)
+        )}`;
+        document.getElementById(
+          "averageGrade"
+        ).textContent = ` المتوسط: %${calcPercentage(averageSum.toFixed(2))}`;
+      }
+
+      submitBtn.addEventListener("click", calculate);
+    </script>
   </body>
 </html>
