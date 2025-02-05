@@ -196,6 +196,10 @@
       let tempOptionEl = ``;
 
       function updateUI() {
+        optionEl = ``;
+        subjectsEl = ``;
+        tempOptionEl = ``;
+        gradesFormEl.innerHTML = subjectsEl;
         for (let i = 0; i < classifications.length; i++) {
           tempOptionEl = `
           <option value="${classifications[i].code}">${classifications[i].name}</option>
