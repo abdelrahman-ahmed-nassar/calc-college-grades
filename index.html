@@ -163,27 +163,38 @@
         },
         { name: "صفر", code: "J", max: 0.1, min: -0.1, average: 0 },
       ];
-
-      const subjectsArr = getLocalStorageItem(
-        "subjectsArr",
-        defaultSubjectsArr
-      );
-      const classifications = getLocalStorageItem(
-        "classifications",
-        defaultClassifications
-      );
-
-      // Optionally, ensure localStorage is populated
-      if (!localStorage.getItem("subjectsArr")) {
-        localStorage.setItem("subjectsArr", JSON.stringify(defaultSubjectsArr));
-      }
-
-      if (!localStorage.getItem("classifications")) {
-        localStorage.setItem(
+      let subjectsArr = [];
+      let classifications = [];
+      function loadData() {
+        subjectsArr = getLocalStorageItem("subjectsArr", defaultSubjectsArr);
+        classifications = getLocalStorageItem(
           "classifications",
-          JSON.stringify(defaultClassifications)
+          defaultClassifications
         );
+
+        // Optionally, ensure localStorage is populated
+        if (!localStorage.getItem("subjectsArr")) {
+          localStorage.setItem(
+            "subjectsArr",
+            JSON.stringify(defaultSubjectsArr)
+          );
+        }
+
+        if (!localStorage.getItem("classifications")) {
+          localStorage.setItem(
+            "classifications",
+            JSON.stringify(defaultClassifications)
+          );
+        }
       }
+      loadData();
+
+      document.addEventListener("DOMContentLoaded", function () {
+        loadData();
+      });
+      window.addEventListener("popstate", function (event) {
+        loadData();
+      });
 
       /////////////////////////////////////////////
       // !HTML
