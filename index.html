@@ -189,47 +189,50 @@
       }
       loadData();
 
-      window.addEventListener("storage", function (event) {
-        console.log("update");
-        loadData();
-      });
-
       /////////////////////////////////////////////
       // !HTML
       let optionEl = ``;
-
-      for (let i = 0; i < classifications.length; i++) {
-        let tempOptionEl = `
-    <option value="${classifications[i].code}">${classifications[i].name}</option>
-  `;
-        optionEl += tempOptionEl;
-      }
-
       let subjectsEl = ``;
-      for (let i = 0; i < subjectsArr.length; i++) {
-        let subjectName = subjectsArr[i][0];
-        let tempSubjectEl = `
+      let tempOptionEl = ``;
+
+      function updateUI() {
+        for (let i = 0; i < classifications.length; i++) {
+          tempOptionEl = `
+          <option value="${classifications[i].code}">${classifications[i].name}</option>
+          `;
+          optionEl += tempOptionEl;
+        }
+
+        for (let i = 0; i < subjectsArr.length; i++) {
+          let subjectName = subjectsArr[i][0];
+          let tempSubjectEl = `
           <div class="form-group">
-          <label for="${subjectName}">${subjectName}</label>
-          <select id="${subjectName}" name="${subjectName}">
+            <label for="${subjectName}">${subjectName}</label>
+            <select id="${subjectName}" name="${subjectName}">
             ${optionEl}
-          </select>
-        </div>`;
-        subjectsEl += tempSubjectEl;
+            </select>
+          </div>`;
+          subjectsEl += tempSubjectEl;
+        }
+
+        subjectsEl += `
+            <button type="submit" id="calc-grade" class="calc-grade">احسب التقدير</button>
+            <div class="settings-group">
+              <a href="subjects-settings.html" class='settings-link'>تعديل المواد</a>
+              <a href="classifications-settings.html" class='settings-link'>تعديل التقديرات</a>
+            </div>
+            `;
+
+        let gradesFormEl = document.querySelector("#gradesForm");
+        gradesFormEl.innerHTML = subjectsEl;
       }
+      updateUI();
 
-      subjectsEl += `<button type="submit" id="calc-grade" class="calc-grade">احسب التقدير</button>`;
-      subjectsEl += `
-          <div class="settings-group">
-      <a href="subjects-settings.html" class='settings-link'>تعديل المواد</a>
-      <a href="classifications-settings.html" class='settings-link'>تعديل التقديرات</a>
-    </div>
-      `;
-
-      let gradesFormEl = document.querySelector("#gradesForm");
-      gradesFormEl.innerHTML = subjectsEl;
-
-      const submitBtn = document.getElementById("calc-grade");
+      window.addEventListener("storage", function (event) {
+        console.log("update");
+        loadData();
+        updateUI();
+      });
 
       ////////////////////////////////////
       // !LOGIC
@@ -238,7 +241,6 @@
       let totalMarks = 0;
 
       for (let subject of subjectsArr) {
-        // creating object according to degree
         subjects.push({
           name: subject[0],
           degree: subject[1],
@@ -265,7 +267,6 @@
       }
 
       //*  calc the grade
-
       function calculate(e) {
         e.preventDefault();
 
@@ -308,7 +309,7 @@
           "averageGrade"
         ).textContent = ` المتوسط: %${calcPercentage(averageSum.toFixed(2))}`;
       }
-
+      const submitBtn = document.getElementById("calc-grade");
       submitBtn.addEventListener("click", calculate);
     </script>
   </body>
