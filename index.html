@@ -189,6 +189,11 @@
       }
       loadData();
 
+      window.addEventListener("storage", function (event) {
+        console.log("update");
+        loadData();
+      });
+
       /////////////////////////////////////////////
       // !HTML
       let optionEl = ``;
@@ -305,7 +310,6 @@
       }
 
       submitBtn.addEventListener("click", calculate);
-
     </script>
   </body>
 </html>

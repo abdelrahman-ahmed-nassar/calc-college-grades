@@ -219,7 +219,6 @@
           subjects.splice(index, 1);
           localStorage.setItem("subjectsArr", JSON.stringify(subjects));
           renderSubjects();
-          location.reload();
         };
 
         // Save/Update subject
@@ -245,8 +244,6 @@
           // Reset form
           subjectForm.reset();
           editIndexInput.value = -1;
-
-          location.reload();
         });
 
         // Initial render
